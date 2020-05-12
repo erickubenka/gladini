@@ -1,0 +1,28 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: selenium-node-chrome-hpa
+  annotations:
+    # metric-config.<metricType>.<metricName>.<collectorName>/<configKey>
+    metric-config.external.http.json/json-key: "$.value.nodes.value"
+    metric-config.external.http.json/endpoint: "http://metric-source.default:8080/metrics"
+    metric-config.external.http.json/aggregator: "max"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: selenium-node-chrome
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+  - type: External
+    external:
+      metric:
+        name: http
+        selector:
+          matchLabels:
+            identifier: unique-metric-name
+      target:
+        averageValue: 1
+        type: AverageValue
+        
