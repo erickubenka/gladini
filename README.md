@@ -1,5 +1,14 @@
 # Gladius - A Test Automation Platform in Kubernetes
 
+## Introduction
+
+## Prequisites
+
+* Kubectl
+* Helm 3
+* Docker
+* GoLang
+
 ## Selenium Grid
 We will use the current alpha version of selenium to support bleeding edge features and get in touch with current bugs as soon as possible.
 
@@ -30,10 +39,38 @@ With `selex` we create a simple custom metric exporter for Selenium grid by usin
 To build things up, see the provided `Dockerfile` in `selex/Dockerfile`.
 
 Run these commands to build the Docker container locallly, if you want to:
-````
+````bash
 cd selex/
 docker build --tag selex:1.0 .
 docker run --publish 8080:8080 --detach --name selex selex:1.0 
+# Verify it works
+docker stop selex
+docker rm selex
+````
+
+Prometheus and Prometheus Adapter need some configuration to know about our metrics.
+First of all we changed the scrape-configs in `prometheus/values.yaml` and add the custom metrics exporter `selex`.
+````yaml
+scrape_configs:
+    - job_name: prometheus
+    static_configs:
+        - targets:
+        - localhost:9090
+    - job_name: selex
+    scrape_interval: 10s
+    static_configs:
+        - targets:
+        - selex:8080
+````
+
+As first step we have to enable custom and external metrics in Prometheus Adapert by chaning the values in `prometheus-adapater/values.yaml` in `rules.custom` and `rules.external` by removing the `[]` and commenting in the outcommented values. 
+````yaml
+rules:
+  default: true
+  custom: []
+# [...]
+  external: []
+# [...]
 ````
 
 ### Links
@@ -44,6 +81,8 @@ https://github.com/kubernetes-sigs/metrics-server
 https://github.com/helm/charts/tree/master/stable/prometheus
 https://github.com/helm/charts/tree/master/stable/prometheus-adapter
 
+https://github.com/directxman12/k8s-prometheus-adapter
+
 #### Autoscaling Guide
 https://learnk8s.io/autoscaling-apps-kubernetes
 https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics
@@ -53,13 +92,18 @@ https://prometheus.io/docs/guides/go-application/
 https://github.com/wakeful/selenium_grid_exporter
 
 
+
 https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
 
 ##############################
 ##############################
 Next steps:
-Edit scrape configs for prometheus to scrape metrics from exporter.
-Get Prometheus helm Chart to use custom values.yml
+https://github.com/zalando-incubator/kube-metrics-adapter
+https://github.com/kubernetes-sigs/metrics-server/issues/131
+https://github.com/DirectXMan12/k8s-prometheus-adapter/issues/164
+https://blog.kloia.com/kubernetes-hpa-externalmetrics-prometheus-acb1d8a4ed50
+https://itnext.io/horizontal-pod-autoscale-with-custom-metrics-8cb13e9d475
+https://www.magalix.com/blog/the-adapter-pattern
 
 think about: downscaling - dont remove pods that have current sessions!
 
