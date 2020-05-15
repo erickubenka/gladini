@@ -105,6 +105,8 @@ https://blog.kloia.com/kubernetes-hpa-externalmetrics-prometheus-acb1d8a4ed50
 https://itnext.io/horizontal-pod-autoscale-with-custom-metrics-8cb13e9d475
 https://www.magalix.com/blog/the-adapter-pattern
 
+set desirect max value for saling limit.
+
 think about: downscaling - dont remove pods that have current sessions!
 
 
@@ -129,3 +131,25 @@ bash open_j.sh
 
 #### ADMIN PASS
 Oa3IDD66bJ
+
+free 0
+inuse 2
+registered 2
+
+target x  = 2
+
+y > x --> scale up
+y < x --> scale down
+
+define y
+
+registered 
+
+
+availble    inuse   delta
+4           0       -4    > 4
+4           1       -3    > 3
+4           2       -2    > 2
+4           3       -1    > 1
+4           4       0
+4           5       1

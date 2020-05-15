@@ -1,4 +1,4 @@
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: selenium-node-chrome-hpa
@@ -12,5 +12,8 @@ spec:
   metrics:
   - type: External
     external:
-      metricName: selenium_grid_hub_chromeNodes
-      targetAverageValue: 1
+      metric:
+        name: selenium_grid_hub_chromesessionsfree
+      target:
+        type: Value
+        value: 2

@@ -25,10 +25,10 @@ var (
 )
 
 type Exporter struct {
-	URI, message                         			string
-	mutex                                			sync.RWMutex
-	up, ready, registeredNodes						prometheus.Gauge
-	chromeNodes, chromeSessionsInUse				prometheus.Gauge
+	URI, message                         												string
+	mutex                                												sync.RWMutex
+	up, ready, registeredNodes															prometheus.Gauge
+	chromeNodes, chromeSessionsInUse, chromeSessionsTotalAvailable, chromeSessionsFree 	prometheus.Gauge
 }
 
 type HubResponse struct {
@@ -96,6 +96,18 @@ func NewExporter(uri string) *Exporter {
 			Name:      "chromeSessionsInUse",
 			Help:      "total number of chrome sessions in use",
 		}),
+		chromeSessionsTotalAvailable: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "chromeSessionsTotalAvailable",
+			Help:      "total number of chrome sessions available regardless of use state",
+		}),
+		chromeSessionsFree: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "chromeSessionsFree",
+			Help:      "total number of chrome sessions free",
+		}),
 	}
 }
 
@@ -104,8 +116,11 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.up.Describe(ch)
 	e.ready.Describe(ch)
 	e.registeredNodes.Describe(ch)
+
 	e.chromeNodes.Describe(ch)
 	e.chromeSessionsInUse.Describe(ch)
+	e.chromeSessionsTotalAvailable.Describe(ch)
+	e.chromeSessionsFree.Describe(ch)
 }
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
@@ -118,8 +133,12 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- e.up
 	ch <- e.ready
 	ch <- e.registeredNodes
+
 	ch <- e.chromeNodes
 	ch <- e.chromeSessionsInUse
+	ch <- e.chromeSessionsTotalAvailable
+	ch <- e.chromeSessionsFree
+
 	return
 }
 
@@ -129,8 +148,11 @@ func (e *Exporter) scrape() {
 	e.ready.Set(0)
 	e.up.Set(0)
 	e.registeredNodes.Set(0)
+
 	e.chromeNodes.Set(0)
 	e.chromeSessionsInUse.Set(0)
+	e.chromeSessionsTotalAvailable.Set(0)
+	e.chromeSessionsFree.Set(0)
 
 	body, err := e.fetch()
 	if err != nil {
@@ -161,6 +183,7 @@ func (e *Exporter) scrape() {
 	// set registered node count for chrome...
 	var chromeNodeCount float64 = 0
 	var chromeSessionCount float64 = 0
+	var chromeSessionMax float64 = 0
 	for _, node := range hResponse.Value.Nodes {
 		for _, stereoType := range node.StereoTypes {
 			if stereoType.Capabilities.BrowserName == "chrome" {
@@ -169,12 +192,13 @@ func (e *Exporter) scrape() {
 		}
 
 		chromeSessionCount = chromeSessionCount + float64(len(node.Sessions))
+		chromeSessionMax = chromeSessionMax + float64(node.MaxSessions)
 	}
-
-	// set used ChromeSessions and set ChromeMaxSessions
 
 	e.chromeNodes.Set(chromeNodeCount)
 	e.chromeSessionsInUse.Set(chromeSessionCount)
+	e.chromeSessionsTotalAvailable.Set(chromeSessionMax)
+	e.chromeSessionsFree.Set(chromeSessionMax-chromeSessionCount)
 }
 
 func (e Exporter) fetch() (output []byte, err error) {

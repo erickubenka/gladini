@@ -56,13 +56,13 @@ rules:
   # default, custom, external and resource entries
   existing:
   external:
-  - seriesQuery: 'selenium_grid_hub_chromeNodes'
+  - seriesQuery: '{__name__= "selenium_grid_hub_chromeSessionsFree"}'
     resources:
         template: <<.Resource>>
     name:
-        matches: "selenium_grid_hub_chromeNodes"
-        as: "selenium_grid_hub_chromeNodes"
-    metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+        matches: "selenium_grid_hub_chromeSessionsFree"
+        as: "selenium_grid_hub_chromesessionsfree"
+    metricsQuery: sum(<<.Series>>)
   resource: {}
 #   cpu:
 #     containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m])) by (<<.GroupBy>>)

@@ -10,12 +10,12 @@ kubectl create --filename=../selenium-node-chrome-deployment.yaml
 kubectl create --filename=../selex-deployment.yaml
 kubectl create --filename=../selex-service.yaml
 
-sleep 5
+#sleep 5
 
 # Kubernetes Metrics Server
 #kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
 
-sleep 5
+sleep 3
 
 # Prometheus Server and Adapter
 helm install prometheus stable/prometheus -f "../prometheus/values.yaml"
