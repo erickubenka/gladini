@@ -56,12 +56,12 @@ rules:
   # default, custom, external and resource entries
   existing:
   external:
-  - seriesQuery: '{__name__= "selenium_grid_hub_chromeSessionsFree"}'
+  - seriesQuery: '{__name__= "selenium_grid_hub_chromeSessionsInUsePercent"}'
     resources:
         template: <<.Resource>>
     name:
-        matches: "selenium_grid_hub_chromeSessionsFree"
-        as: "selenium_grid_hub_chromesessionsfree"
+        matches: "selenium_grid_hub_chromeSessionsInUsePercent"
+        as: "selenium_grid_hub_chromesessionsinusepercent"
     metricsQuery: sum(<<.Series>>)
   resource: {}
 #   cpu:

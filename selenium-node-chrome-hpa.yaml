@@ -7,13 +7,13 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: selenium-node-chrome
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 4
   metrics:
   - type: External
     external:
       metric:
-        name: selenium_grid_hub_chromesessionsfree
+        name: selenium_grid_hub_chromesessionsinusepercent
       target:
         type: Value
-        value: 2
+        value: 75

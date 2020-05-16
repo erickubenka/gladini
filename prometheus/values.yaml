@@ -1170,7 +1170,7 @@ serverFiles:
           - targets:
             - localhost:9090
       - job_name: selex
-        scrape_interval: 10s
+        scrape_interval: 5s
         static_configs:
           - targets:
             - selex:8080

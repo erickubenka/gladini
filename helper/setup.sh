@@ -22,4 +22,4 @@ helm install prometheus stable/prometheus -f "../prometheus/values.yaml"
 helm install prometheus-adapter stable/prometheus-adapter -f "../prometheus-adapter/values.yaml"
 
 # setup autoscaler
-#kubectl create --filename=../selenium-node-chrome-hpa.yaml
+kubectl create --filename=../selenium-node-chrome-hpa.yaml
