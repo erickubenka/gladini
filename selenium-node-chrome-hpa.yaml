@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: selenium-node-chrome-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: selenium-node-chrome
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+  - type: External
+    external:
+      metric:
+        name: selenium_grid_hub_chromesessionsinusepercent
+      target:
+        type: Value
+        value: 75
