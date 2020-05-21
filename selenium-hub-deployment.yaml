@@ -17,6 +17,11 @@ spec:
       containers:
       - name: selenium-hub
         image: selenium/hub:4.0.0
+        env:
+#          - name: GRID_TIMEOUT 
+#            value: "30"
+          - name: GRID_NEW_SESSION_WAIT_TIMEOUT
+            value: "60"
         ports:
           - containerPort: 4444
         resources:
@@ -29,4 +34,3 @@ spec:
             port: 4444
           initialDelaySeconds: 30
           timeoutSeconds: 5
-

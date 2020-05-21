@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
@@ -176,37 +176,71 @@ func (e *Exporter) scrape() {
 
 	e.up.Set(1)
 
-	log.Infoln(string(body))
-
-	var hResponse HubResponse
-	if err := json.Unmarshal(body, &hResponse); err != nil {
-
+	// get complete respone as json raw map
+	var hubResponseMap map[string]json.RawMessage
+	if err := json.Unmarshal(body, &hubResponseMap); err != nil {
 		log.Errorf("Can't decode Selenium Grid response: %v", err)
 		return
 	}
 
+	// get {hubResponseMap.value}
+	var valueMap map[string]json.RawMessage
+	err = json.Unmarshal(hubResponseMap["value"], &valueMap)
+	
 	// Set ready state of grid...
-	if hResponse.Value.Ready {
+	var readyState bool
+	err = json.Unmarshal(valueMap["ready"], &readyState)
+
+	if readyState {
 		e.ready.Set(1)
 	}
-	
+
+	// get {hubResponseMap.value.nodes[]}
+	var nodesMap []map[string]json.RawMessage
+	err = json.Unmarshal(valueMap["nodes"], &nodesMap)
+
 	// set registered node count.
-	e.registeredNodes.Set(float64(len(hResponse.Value.Nodes)))
+	e.registeredNodes.Set(float64(len(nodesMap)))
 	
 	// set registered node count for chrome...
 	var chromeNodeCount float64 = 0
 	var chromeSessionCount float64 = 0
 	var chromeSessionMax float64 = 0
-	for _, node := range hResponse.Value.Nodes {
 
-		for _, stereoType := range node.StereoTypes {
-			if stereoType.Capabilities.BrowserName == "chrome" {
-				chromeNodeCount++
+	// iterate every node response
+	for _, nodeMapEntry := range nodesMap {
+
+		var warning string
+		var id string
+		json.Unmarshal(nodeMapEntry["id"], &id)
+
+		if err := json.Unmarshal(nodeMapEntry["warning"], &warning); err == nil {
+			log.Warnln("Node has warnings present:", id)
+		} else {
+			log.Infoln("Node works properly:", id)
+			var stereotypes []StereoType
+			json.Unmarshal(nodeMapEntry["stereotypes"], &stereotypes)
+			for _, stereoType := range stereotypes {
+
+				// counting chrome nodes here...
+				if stereoType.Capabilities.BrowserName == "chrome" {
+					// increase chrome node count here...
+					chromeNodeCount++
+					
+					// try to get sessions count here...
+					var sessionsMap []map[string]json.RawMessage
+					json.Unmarshal(nodeMapEntry["sessions"], &sessionsMap)
+					chromeSessionCount = chromeSessionCount + float64(len(sessionsMap))
+					
+					var maxSessions float64
+					json.Unmarshal(nodeMapEntry["maxSessions"], &maxSessions)
+					chromeSessionMax = chromeSessionMax + float64(maxSessions)
+				}
+
+				// counting other nodes here...
+				// todo
 			}
 		}
-
-		chromeSessionCount = chromeSessionCount + float64(len(node.Sessions))
-		chromeSessionMax = chromeSessionMax + float64(node.MaxSessions)
 	}
 
 	e.chromeNodes.Set(chromeNodeCount)

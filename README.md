@@ -105,11 +105,11 @@ https://blog.kloia.com/kubernetes-hpa-externalmetrics-prometheus-acb1d8a4ed50
 https://itnext.io/horizontal-pod-autoscale-with-custom-metrics-8cb13e9d475
 https://www.magalix.com/blog/the-adapter-pattern
 
-Downscaled nodes are markes as offline in hub, but they simple should be removed.
---> Currently parse error because of chanign json structure depending on stuff
-may we can store these things "stereotypes" in a paraseable map and then go over it later.
+Solved
+Downscaled nodes are markes as offline in hub, but they simple should be removed....
+curl -X DELETE http://localhost:30020/se/grid/distributor/node/83d72fdc-5c06-44fb-82ec-2c2f9bead7c2
 
-Think about downscaling - do not downscale when session is present
+Think about downscaling - do not downscale when session is present..
 
 
 ## Jenkins
@@ -133,4 +133,3 @@ bash open_j.sh
 
 #### ADMIN PASS
 Oa3IDD66bJ
-
