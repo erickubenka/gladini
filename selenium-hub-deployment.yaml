@@ -21,7 +21,7 @@ spec:
 #          - name: GRID_TIMEOUT 
 #            value: "30"
           - name: GRID_NEW_SESSION_WAIT_TIMEOUT
-            value: "60"
+            value: "60000"
         ports:
           - containerPort: 4444
         resources:

@@ -1,42 +1,39 @@
-# Gladius - A Test Automation Platform in Kubernetes
+# Gladius - A scalable Test Automation Selenium Grid in Kubernetes
 
 ## Introduction
+Gladius is a simple Selenium 4 grid built with Kubernetes. It supports basic autoscaling features bases on external custom metrics  
+and Prometheus. It is just a proof of concept, how to scale deployments with Selenium 4.
+
+Gladius uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha5. There are plenty of features taht worked on Selenium 3 grids, but will curreently not work on Selenium 4 grids, therefore Gladius will sneak and trick around them until Selenium provides better API to interact with cluster.
 
 ## Prequisites
 
+* Kubernetes
 * Kubectl
 * Helm 3
 * Docker
 * GoLang
 
-## Selenium Grid
-We will use the current alpha version of selenium to support bleeding edge features and get in touch with current bugs as soon as possible.
+## Components
 
-Selenium Grid is deployed in Kubernetes and exposed on `localhost:4444`.
+### Underlying Selenium Grid
+As mentioned in the introduction section, Gladius uses Selenium 4.  
+Selenium Grid is deployed in Kubernetes and exposed on `4444` for all Kubernetes cluster communication.
 
-!Important: We have to expose ports form `4442` to `4444` because Selenium Grid system will use `4442` and `4443` for internal communication.
+!Important: Node have to expose ports form `4442` to `4444` because Selenium Grid system will use `4442` and `4443` for internal communication.
 
-### Starting Grid
+### Prometheus
+Gladius uses Prometheus as well as Prometheus adapter for providing metrics and especially custom metrics to the Kubernetes cluster. 
+With the exposed custom metrics Gladius is able to fullfill autoscaling nodes and browser sessions.
 
-1. Run `bash helpers/setup.sh`.
+### Metrics
+Gladius ships with its own Prometheus metrics exporter, called `Selex`, a simple abbreviation for "Selenium exporter".  
+Selex will use the Selenium Grid Hub API, provided under http://selenium-hub:30020/status, and is implemented in a simple `Golang` HTTP Listener. To parse the JSON into objects, Selex provide some structs. 
 
-### Connecting to Grid
+> Note: As writing this, the Selenium 4 API is hard to use, because sometimes the response-json structure will change, depending on state of the node. To workaround this Selex will use dynamically JSON-map-parsing.
 
-1. Get the current port of Selenium Hub in local Kubernetes cluster
-````
-kubectl describe service selenium-hub
-````
-2. Connect to Grid via `localhost:NODE_PORT`
-
-## Prometheus
-
-We will use the default kubernetes metrics server and Prometheus as well as Prometheus adapter for creating custom metrics. 
-With this approach we want to enable a autoscaling selenium hub.
-
-### Custom Metrics
-With `selex` we create a simple custom metric exporter for Selenium grid by using the Selnium grid API provided under `http://localhost:30020/status`implemented in a simple `golang` HTTP Listener. Therefore we implemented some structs to parse the JSON response into objects. 
-
-To build things up, see the provided `Dockerfile` in `selex/Dockerfile`.
+IMPORTANT!
+Selex must be build on your local machine, unless the container is `NOT` deployed into a public registry.
 
 Run these commands to build the Docker container locallly, if you want to:
 ````bash
@@ -48,6 +45,10 @@ docker stop selex
 docker rm selex
 ````
 
+If you want to extend Selex by modifying the Go files, you can build and test it locally.  
+For these instructions please have a look into `Dockerfile` in `selex/Dockerfile`.
+
+#### Register Selex on Prometheus
 Prometheus and Prometheus Adapter need some configuration to know about our metrics.
 First of all we changed the scrape-configs in `prometheus/values.yaml` and add the custom metrics exporter `selex`.
 ````yaml
@@ -57,13 +58,13 @@ scrape_configs:
         - targets:
         - localhost:9090
     - job_name: selex
-    scrape_interval: 10s
+    scrape_interval: 5s
     static_configs:
         - targets:
         - selex:8080
 ````
 
-As first step we have to enable custom and external metrics in Prometheus Adapert by chaning the values in `prometheus-adapater/values.yaml` in `rules.custom` and `rules.external` by removing the `[]` and commenting in the outcommented values. 
+As first step we have to enable custom and external metrics in Prometheus Adapter by changing the values in `prometheus-adapater/values.yaml` in `rules.custom` and `rules.external` by removing the `[]` and commenting in the outcommented values. 
 ````yaml
 rules:
   default: true
@@ -73,7 +74,89 @@ rules:
 # [...]
 ````
 
-### Links
+For chrome autoscaling metrics Selex provides a metric called `selenium_grid_hub_chromeSessionsInUsePercent`, which indicates the current used chrome sessions in percentage to all available crhome sessions. But Selex provide some more metrics, listet below in appendix section.
+
+````yaml
+external:
+- seriesQuery: '{__name__= "selenium_grid_hub_chromeSessionsInUsePercent"}'
+  resources:
+      template: <<.Resource>>
+  name:
+      matches: "selenium_grid_hub_chromeSessionsInUsePercent"
+      as: "selenium_grid_hub_chromesessionsinusepercent"
+  metricsQuery: sum(<<.Series>>)
+````
+
+> Note: See the little change between `external.seriesQuery.name.matches` and `external.seriesQuery.name.as`? It is all about lowercase, because Kubernetes `HorizontalPodAutoScaler` will query the custom and external metrics API with lowercase.
+
+kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1
+kubectl get --raw /apis/external.metrics.k8s.io/v1beta1
+
+### How upscaling works
+Gladius uses the provided metrics of Selex to configure a Kubernetes `HorizontalPodAutoscaler` for Selenium browser node deployments.  
+The rest of this magical thing is simply part of Kubernetes.
+
+````yaml
+metrics:
+- type: External
+  external:
+    metric:
+      name: selenium_grid_hub_chromesessionsinusepercent
+    target:
+      type: Value
+      value: 75
+````
+
+>Currently only Google Chrome is supported, so the HPA is just available for chrome nodes.
+
+### How downscaling works
+Downscaling works the same way as upscaling, but reversed. If the node HPA detects that all metrics are below target, it will remove nodes automatically.  
+To provide a graceful shutdown of Selenium nodes, they need to unregister themselves on the Hub/Grid. To fullfill this, the nodes hav to call the followings on shutdown:
+
+````bash
+# This will store the UUID of the node into nodeid
+nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}')
+
+# Tell the Hub/Grid to remove this node.
+curl -X DELETE http://selenium-hub:4444/se/grid/distributor/node/$nodeid
+````
+
+## Getting Started
+
+### Starting Gladius
+
+1. Checkout this project.
+2. Run `bash helpers/setup.sh`.
+
+These little helper will do the following things:
+1. Startup a Selenium 4 Hub deployment
+2. Expose the Hub on external port
+3. Startup a Selenium 4 Chrome Node deployment
+4. Startup a Selex container to expose custom metrics
+5. Expose the metrics one external port
+6. Installs and configures a Prometheus Helm chart
+7. Installs and configures a Prometheus Adapter Helm chart
+8. Creates a HorizontalPodAutoscaler for chrome deployment
+
+### Connecting to Grid
+
+#### Seleniumd Grid URL
+
+Gladius will expose underlying Selenium Hub Container on port `30020`.  
+1. Use `http://localhost:30020` as your selenium remote grid url.
+
+#### Prometheus Graph UI
+To experiment with Prometheus queries, you can run the `bash helpers/open_prometheus.sh` command.  
+It will map port `9090` on your local machine.
+
+Then simply call http://localhost:9090/graph
+
+### Shutdown evertyhing
+
+1. Run `bash helpers/teardown.sh`
+
+
+## Links
 #### Metrics Server
 https://github.com/kubernetes-sigs/metrics-server
 
@@ -91,13 +174,7 @@ https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkth
 https://prometheus.io/docs/guides/go-application/
 https://github.com/wakeful/selenium_grid_exporter
 
-
-
-https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
-
-##############################
-##############################
-Next steps:
+## Next Steps
 https://github.com/zalando-incubator/kube-metrics-adapter
 https://github.com/kubernetes-sigs/metrics-server/issues/131
 https://github.com/DirectXMan12/k8s-prometheus-adapter/issues/164
