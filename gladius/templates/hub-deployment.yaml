@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selenium-hub
+  labels:
+    app: selenium-hub
+spec:
+  replicas: {{ .Values.hub.replicaCount }}
+  selector:
+    matchLabels:
+      app: selenium-hub
+  template:
+    metadata:
+      labels:
+        app: selenium-hub
+    spec:
+      containers:
+      - name: selenium-hub
+        image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Chart.AppVersion }}"
+        env:
+          - name: GRID_NEW_SESSION_WAIT_TIMEOUT
+            value: "{{ .Values.hub.env.gridNewSessionWaitTimeout }}"
+        ports:
+          - containerPort: 4444
+        resources:
+          limits:
+            memory: "1000Mi"
+            cpu: ".5"
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 4444
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
