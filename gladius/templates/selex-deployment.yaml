@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selex
+  labels:
+    app: selex
+spec:
+  replicas: {{ .Values.selex.replicaCount }}
+  selector:
+    matchLabels:
+      app: selex
+  template:
+    metadata:
+      labels:
+        app: selex
+    spec:
+      containers:
+      - name: selex
+        image: "{{ .Values.selex.image.repository }}:{{ .Values.selex.image.tag | default .Chart.AppVersion }}"
+        ports:
+          - containerPort: 8080
+        env:
+          - name: GRIDURI
+            value: "http://{{ .Values.hub.name }}:{{ .Values.hub.service.port }}"
+        resources:
+          limits:
+            memory: "1000Mi"
+            cpu: ".5"
+            

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: selex
+  labels:
+    app: selex
+spec:
+  type: {{ .Values.selex.service.type }}
+  ports:
+  - port: {{ .Values.selex.service.port }}
+    targetPort: {{ .Values.selex.service.port }}
+    nodePort: {{ .Values.selex.service.nodePort }}
+    name: port0
+  selector:
+    app: selex
+  sessionAffinity: None
