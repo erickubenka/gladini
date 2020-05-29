@@ -110,7 +110,7 @@ metrics:
 
 ### How downscaling works
 Downscaling works the same way as upscaling, but reversed. If the node HPA detects that all metrics are below target, it will remove nodes automatically.  
-To provide a graceful shutdown of Selenium nodes, they need to unregister themselves on the Hub/Grid. To fullfill this, the nodes have to call the followings on shutdown:
+To provide a graceful shutdown of Selenium nodes, they need to unregister themselves on the Hub/Grid. To fullfill this, the nodes have to call the followings on shutdown.
 
 ````bash
 # This will store the UUID of the node into nodeid
@@ -118,6 +118,30 @@ nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2,
 
 # Tell the Hub/Grid to remove this node.
 curl -X DELETE http://selenium-hub:4444/se/grid/distributor/node/$nodeid
+````
+
+By using this option, you may encounter the problem, that nodes with workload got killed by automatic downscaling, because Kubernetes does not care about running sessions. To avoid this, node will check for workload, when terminitations starts and just wait up to an hour, by configuring the property `terminationGracePeriodSeconds` to value `3600`. 
+
+````bash
+while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done;
+````
+
+Complete teardown for node deployment have to look like this:
+````yaml
+containers:
+- name: selenium-node-chrome
+  # other things here...
+  lifecycle:
+    preStop:
+      exec:
+        command: [
+          "/bin/sh", 
+          "-c", 
+          "while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
+            nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}'); \
+            curl -X DELETE http://selenium-hub:4444/se/grid/distributor/node/$nodeid"
+          ]
+terminationGracePeriodSeconds: 3600
 ````
 
 ## Getting Started
@@ -170,13 +194,34 @@ https://github.com/directxman12/k8s-prometheus-adapter
 https://github.com/DirectXMan12/k8s-prometheus-adapter/issues/164
 https://blog.kloia.com/kubernetes-hpa-externalmetrics-prometheus-acb1d8a4ed50
 https://itnext.io/horizontal-pod-autoscale-with-custom-metrics-8cb13e9d475
+https://medium.com/@zhimin.wen/custom-prometheus-metrics-for-apps-running-in-kubernetes-498d69ada7aa
 
 #### Autoscaling
 https://learnk8s.io/autoscaling-apps-kubernetes
 https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics
 
+#### GoCölient Library to talk with Kubectl
+https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+https://github.com/kubernetes/client-go/tree/master/examples/create-update-delete-deployment
+https://github.com/kubernetes/client-go/tree/release-13.0
+https://github.com/kubernetes/sample-apiserver/blob/master/go.mod
+https://github.com/kubernetes/client-go/blob/master/examples/in-cluster-client-configuration/main.go
+
 ## Next Steps
 ToDo - Think about downscaling - do not downscale when session is present..
+Maybe we can jsut wait in preExitScript until session ends, and block other sessions.
+curl http://localhost:5555/status | jq '.value.node.sessions | length'
+nur wenn der wert 0 ist, dann runterfahren...
+
+while true; do sleep 2; session=$(curl http://localhost:5555/status | jq '.value.node.sessions | length'); echo $session; done
+
+while [$(curl http://localhost:5555/status | jq '.value.node.sessions | length') -eq 0]; do sleep 2; done
+while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 2; done
+otherwise sleeeep.
+
+yay it will sleep now for 1 hour.
+und wenn das auch nciht reicht, noch den videre watchdog drauf ansetzen!
+
 
 ## Jenkins
 
