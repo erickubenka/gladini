@@ -85,11 +85,25 @@ func contains(arr []string, str string) bool {
  }
 
 func delete(id string) {
-	_, err := http.NewRequest("DELETE", *gridUri + "/se/grid/distributor/node/" + id, nil)
+
+	var url string = *gridUri + "/se/grid/distributor/node/" + id
+
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+
+	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
+
+	resp, err := client.Do(req)
+    if err != nil {
+        log.Fatal(err)
+        return
+    }
+    defer resp.Body.Close()
 }
 
 func fetch() (output []byte, err error) {
