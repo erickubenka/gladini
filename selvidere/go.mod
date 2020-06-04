@@ -1,4 +1,4 @@
-module code-fever.de/videre
+module code-fever.de/selvidere
 
 go 1.14
 

@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: selenium-hub
+  name: "{{ .Values.hub.name }}"
   labels:
-    app: selenium-hub
+    app: "{{ .Values.hub.name }}"
 spec:
   replicas: {{ .Values.hub.replicaCount }}
   selector:
     matchLabels:
-      app: selenium-hub
+      app: "{{ .Values.hub.name }}"
   template:
     metadata:
       labels:
-        app: selenium-hub
+        app: "{{ .Values.hub.name }}"
     spec:
       containers:
-      - name: selenium-hub
+      - name: "{{ .Values.hub.name }}"
         image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Chart.AppVersion }}"
         env:
           - name: GRID_NEW_SESSION_WAIT_TIMEOUT

@@ -6,7 +6,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: selenium-node-chrome
+    name: "{{ .Values.chrome.name }}"
   minReplicas: {{ .Values.chrome.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.chrome.autoscaling.maxReplicas }}
   metrics:

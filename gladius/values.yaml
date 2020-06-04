@@ -110,3 +110,18 @@ selex:
     type: NodePort
     port: 8080
     nodePort: 30080
+
+selvidere:
+  name: "selvidere"
+
+  replicaCount: 1
+
+  image: 
+    repository: "selvidere"
+    tag: "1.0"
+    pullPolicy: IfNotPresent
+
+  autoscaling:
+    enabled: false
+
+  interval: "5"

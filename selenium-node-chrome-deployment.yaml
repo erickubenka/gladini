@@ -33,12 +33,12 @@ spec:
           limits:
             memory: "1000Mi"
             cpu: ".5"
-        livenessProbe:
-          httpGet:
-            path: /status
-            port: 5555
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+#        livenessProbe:
+#          httpGet:
+#            path: /status
+#            port: 5555
+#          initialDelaySeconds: 30
+#          timeoutSeconds: 5
         lifecycle:
           preStop:
             exec:

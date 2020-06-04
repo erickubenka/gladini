@@ -1,27 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.selex.name }}"
+  name: "{{ .Values.selvidere.name }}"
   labels:
-    app: "{{ .Values.selex.name }}"
+    app: "{{ .Values.selvidere.name }}"
 spec:
-  replicas: {{ .Values.selex.replicaCount }}
+  replicas: {{ .Values.selvidere.replicaCount }}
   selector:
     matchLabels:
-      app: "{{ .Values.selex.name }}"
+      app: selvidere
   template:
     metadata:
       labels:
-        app: "{{ .Values.selex.name }}"
+        app: selvidere
     spec:
       containers:
-      - name: selex
-        image: "{{ .Values.selex.image.repository }}:{{ .Values.selex.image.tag | default .Chart.AppVersion }}"
+      - name: selvidere
+        image: "{{ .Values.selvidere.image.repository }}:{{ .Values.selvidere.image.tag | default .Chart.AppVersion }}"
         ports:
           - containerPort: 8080
         env:
           - name: GRIDURI
             value: "http://{{ .Values.hub.name }}:{{ .Values.hub.service.port }}"
+          - name: INTERVAL
+            value: "{{ .Values.selvidere.interval }}"
         resources:
           limits:
             memory: "1000Mi"

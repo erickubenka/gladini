@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: videre
+  name: selvidere
   labels:
-    app: videre
+    app: selvidere
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: videre
+      app: selvidere
   template:
     metadata:
       labels:
-        app: videre
+        app: selvidere
     spec:
       containers:
-      - name: videre
-        image: videre:1.0
-        ports:
-          - containerPort: 8080
+      - name: selvidere
+        image: selvidere:1.0
         env:
           - name: GRIDURI
             value: "http://selenium-hub:4444"
+          - name: INTERVAL
+            value: "5"
         resources:
           limits:
             memory: "1000Mi"

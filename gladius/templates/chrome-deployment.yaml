@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: selenium-node-chrome
+  name: "{{ .Values.chrome.name }}"
   labels:
-    app: selenium-node-chrome
+    app: "{{ .Values.chrome.name }}"
 spec:
   replicas: {{ .Values.chrome.replicaCount }}
   selector:
     matchLabels:
-      app: selenium-node-chrome
+      app: "{{ .Values.chrome.name }}"
   template:
     metadata:
       labels:
-        app: selenium-node-chrome
+        app: "{{ .Values.chrome.name }}"
     spec:
       volumes:
       - name: dshm
         emptyDir:
           medium: Memory
       containers:
-      - name: selenium-node-chrome
+      - name: "{{ .Values.chrome.name }}"
         image: "{{ .Values.chrome.image.repository }}:{{ .Values.chrome.image.tag | default .Chart.AppVersion }}"
         ports:
           - containerPort: 5555
@@ -42,4 +42,11 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh","-c","nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}'); curl -X DELETE http://{{ .Values.hub.name }}:4444/se/grid/distributor/node/$nodeid"]
+              command: [
+                "/bin/sh", 
+                "-c", 
+                "while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
+                  nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}'); \
+                  curl -X DELETE http://{{ .Values.hub.name }}:4444/se/grid/distributor/node/$nodeid"
+                ]
+      terminationGracePeriodSeconds: 3600

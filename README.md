@@ -28,21 +28,9 @@ With the exposed custom metrics Gladius is able to fullfill autoscaling nodes an
 
 ### Metrics
 Gladius ships with its own Prometheus metrics exporter, called `Selex`, a simple abbreviation for "Selenium exporter".  
-Selex will use the Selenium Grid Hub API, provided under http://selenium-hub:30020/status, and is implemented in a simple `Golang` HTTP Listener. To parse the JSON into objects, Selex provide some structs. 
+Selex will use the Selenium Grid Hub API, provided under http://selenium-hub:NODE_Port/status, and is implemented in a simple `Golang` HTTP Listener. To parse the JSON into objects, Selex provide some structs. 
 
 > Note: As writing this, the Selenium 4 API is hard to use, because sometimes the response-json structure will change, depending on state of the node. To workaround this Selex will use dynamically JSON-map-parsing.
-
-> !!! - IMPORTANT! Selex must be build on your local machine, unless the container is `NOT` deployed into a public registry.
-
-Run these commands to build the Docker container locallly, if you want to:
-````bash
-cd selex/
-docker build --tag selex:1.0 .
-docker run --publish 8080:8080 --detach --name selex selex:1.0 
-# Verify it works
-docker stop selex
-docker rm selex
-````
 
 If you want to extend Selex by modifying the Go files, you can build and test it locally.  
 For these instructions please have a look into `Dockerfile` in `selex/Dockerfile`.
@@ -208,20 +196,15 @@ https://github.com/kubernetes/sample-apiserver/blob/master/go.mod
 https://github.com/kubernetes/client-go/blob/master/examples/in-cluster-client-configuration/main.go
 
 ## Next Steps
-ToDo - Think about downscaling - do not downscale when session is present..
-Maybe we can jsut wait in preExitScript until session ends, and block other sessions.
-curl http://localhost:5555/status | jq '.value.node.sessions | length'
-nur wenn der wert 0 ist, dann runterfahren...
+when kubernetes liveness probe fails, it will spawn the node again with name...
+you can solve this by calling delete for  one of these things...
 
-while true; do sleep 2; session=$(curl http://localhost:5555/status | jq '.value.node.sessions | length'); echo $session; done
+oh look an issue on selenium 4
+* start multiple threads against one node -> will fail. 
 
-while [$(curl http://localhost:5555/status | jq '.value.node.sessions | length') -eq 0]; do sleep 2; done
-while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 2; done
-otherwise sleeeep.
-
-yay it will sleep now for 1 hour.
-und wenn das auch nciht reicht, noch den videre watchdog drauf ansetzen!
-
+liveness probe in chrome deployment
+implement examini random spawner
+rename everything to gladini
 
 ## Jenkins
 
