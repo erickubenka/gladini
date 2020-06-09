@@ -4,4 +4,4 @@ helm delete prometheus
 helm delete prometheus-adapter 
 
 # Remove Metrics Server
-helm uninstall gladius
+helm uninstall gladini
