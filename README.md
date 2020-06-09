@@ -1,10 +1,10 @@
-# Gladius - A scalable Test Automation Selenium Grid in Kubernetes
+# Gladini - A scalable Test Automation Selenium Grid in Kubernetes
 
 ## Introduction
-Gladius is a simple Selenium 4 grid built with Kubernetes. It supports basic autoscaling features based on external custom metrics  
+Gladini is a simple Selenium 4 grid built with Kubernetes. It supports basic autoscaling features based on external custom metrics  
 and Prometheus. It is just a proof of concept, how to scale deployments with Selenium 4.
 
-Gladius uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha5. There are plenty of features that worked on Selenium 3 grids, but will currently not work on Selenium 4 grids, therefore Gladius will sneak and trick around them until Selenium provides better API to interact with cluster.
+Gladini uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha5. There are plenty of features that worked on Selenium 3 grids, but will currently not work on Selenium 4 grids, therefore Gladini will sneak and trick around them until Selenium provides better API to interact with cluster.
 
 ## Prequisites
 
@@ -17,17 +17,17 @@ Gladius uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha
 ## Components
 
 ### Underlying Selenium Grid
-As mentioned in the introduction section, Gladius uses Selenium 4.  
+As mentioned in the introduction section, Gladini uses Selenium 4.  
 Selenium Grid is deployed in Kubernetes and exposed on `4444` for all Kubernetes cluster communication.
 
 > !!! - IMPORTANT: Node have to expose ports form `4442` to `4444` because Selenium Grid system will use `4442` and `4443` for internal communication.
 
 ### Prometheus
-Gladius uses Prometheus as well as Prometheus adapter for providing metrics and especially custom metrics to the Kubernetes cluster. 
-With the exposed custom metrics Gladius is able to fullfill autoscaling nodes and browser sessions.
+Gladini uses Prometheus as well as Prometheus adapter for providing metrics and especially custom metrics to the Kubernetes cluster. 
+With the exposed custom metrics Gladini is able to fullfill autoscaling nodes and browser sessions.
 
 ### Metrics
-Gladius ships with its own Prometheus metrics exporter, called `Selex`, a simple abbreviation for "Selenium exporter".  
+Gladini ships with its own Prometheus metrics exporter, called `Selex`, a simple abbreviation for "Selenium exporter".  
 Selex will use the Selenium Grid Hub API, provided under http://selenium-hub:NODE_Port/status, and is implemented in a simple `Golang` HTTP Listener. To parse the JSON into objects, Selex provide some structs. 
 
 > Note: As writing this, the Selenium 4 API is hard to use, because sometimes the response-json structure will change, depending on state of the node. To workaround this Selex will use dynamically JSON-map-parsing.
@@ -80,7 +80,7 @@ kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1
 kubectl get --raw /apis/external.metrics.k8s.io/v1beta1
 
 ### How upscaling works
-Gladius uses the provided metrics of Selex to configure a Kubernetes `HorizontalPodAutoscaler` for Selenium browser node deployments.  
+Gladini uses the provided metrics of Selex to configure a Kubernetes `HorizontalPodAutoscaler` for Selenium browser node deployments.  
 The rest of this magical thing is simply part of Kubernetes.
 
 ````yaml
@@ -134,7 +134,7 @@ terminationGracePeriodSeconds: 3600
 
 ## Getting Started
 
-### Starting Gladius
+### Starting Gladini
 
 1. Checkout this project.
 2. Run `bash helpers/setup.sh`.
@@ -153,7 +153,7 @@ These little helper will do the following things:
 
 #### Seleniumd Grid URL
 
-Gladius will expose underlying Selenium Hub Container on port `30020`.  
+Gladini will expose underlying Selenium Hub Container on port `30020`.  
 1. Use `http://localhost:30020` as your selenium remote grid url.
 
 #### Prometheus Graph UI

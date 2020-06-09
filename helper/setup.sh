@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Gladius
-helm install gladius ../gladius
+# Gladini
+helm install gladini ../gladini
 
 sleep 3
 
