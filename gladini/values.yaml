@@ -89,8 +89,8 @@ chrome:
 
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 5
+    minReplicas: 4
+    maxReplicas: 8
     targetValue: 75
 
 selex:

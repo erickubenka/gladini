@@ -4,7 +4,7 @@
 Gladini is a simple Selenium 4 grid built with Kubernetes. It supports basic autoscaling features based on external custom metrics  
 and Prometheus. It is just a proof of concept, how to scale deployments with Selenium 4.
 
-Gladini uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha5. There are plenty of features that worked on Selenium 3 grids, but will currently not work on Selenium 4 grids, therefore Gladini will sneak and trick around them until Selenium provides better API to interact with cluster.
+Gladini uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha6. There are plenty of features that worked on Selenium 3 grids, but will currently not work on Selenium 4 grids, therefore Gladini will sneak and trick around them until Selenium provides better API to interact with cluster.
 
 ## Prequisites
 
@@ -168,43 +168,39 @@ Then simply call http://localhost:9090/graph
 
 ## Links
 #### General Kubernetes Metrics Server
-https://github.com/kubernetes-sigs/metrics-server
+https://github.com/kubernetes-sigs/metrics-server  
 
 #### Custom Metrics Exporter
-https://prometheus.io/docs/guides/go-application/
+https://prometheus.io/docs/guides/go-application/  
 https://github.com/wakeful/selenium_grid_exporter
 
 #### Prometheus
-https://github.com/helm/charts/tree/master/stable/prometheus
-https://github.com/helm/charts/tree/master/stable/prometheus-adapter
+https://github.com/helm/charts/tree/master/stable/prometheus  
+https://github.com/helm/charts/tree/master/stable/prometheus-adapter  
 https://github.com/directxman12/k8s-prometheus-adapter
 
-https://github.com/DirectXMan12/k8s-prometheus-adapter/issues/164
-https://blog.kloia.com/kubernetes-hpa-externalmetrics-prometheus-acb1d8a4ed50
-https://itnext.io/horizontal-pod-autoscale-with-custom-metrics-8cb13e9d475
-https://medium.com/@zhimin.wen/custom-prometheus-metrics-for-apps-running-in-kubernetes-498d69ada7aa
+https://github.com/DirectXMan12/k8s-prometheus-adapter/issues/164  
+https://blog.kloia.com/kubernetes-hpa-externalmetrics-prometheus-acb1d8a4ed50  
+https://itnext.io/horizontal-pod-autoscale-with-custom-metrics-8cb13e9d475  
+https://medium.com/@zhimin.wen/custom-prometheus-metrics-for-apps-running-in-kubernetes-498d69ada7aa  
 
 #### Autoscaling
-https://learnk8s.io/autoscaling-apps-kubernetes
+https://learnk8s.io/autoscaling-apps-kubernetes  
 https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics
 
 #### GoCölient Library to talk with Kubectl
-https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-https://github.com/kubernetes/client-go/tree/master/examples/create-update-delete-deployment
-https://github.com/kubernetes/client-go/tree/release-13.0
-https://github.com/kubernetes/sample-apiserver/blob/master/go.mod
+https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/  
+https://github.com/kubernetes/client-go/tree/master/examples/create-update-delete-deployment  
+https://github.com/kubernetes/client-go/tree/release-13.0  
+https://github.com/kubernetes/sample-apiserver/blob/master/go.mod  
 https://github.com/kubernetes/client-go/blob/master/examples/in-cluster-client-configuration/main.go
 
-## Next Steps
-when kubernetes liveness probe fails, it will spawn the node again with name...
-you can solve this by calling delete for  one of these things...
+## Troubleshooting
+When kubernetes liveness probe fails for selenium node pods, it will spawn the node again with same id
+Solved by using `Selvidere`
 
-oh look an issue on selenium 4
-* start multiple threads against one node -> will fail. 
-
-liveness probe in chrome deployment
-implement examini random spawner
-rename everything to gladini
+When starting multiple sessions against one node, this may fail
+Solved by using alpha6, because alpha6 only spawns one session per node.
 
 ## Jenkins
 

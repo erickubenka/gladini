@@ -2,7 +2,7 @@
 <!--
   ~ Copyright (c) 2020 Eric Kubenka.
   ~ Licensed under the MIT License.
-  ~ See LICENSE.md file in the project root for full license information.
+  ~ See LICENSE file in the project root for full license information.
   -->
 
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
@@ -10,43 +10,25 @@
 
     <test name="Gladius Grid Tests">
         <classes>
-            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>
+            <class name="de.codefever.gladini.SimpleSeleniumTest"/>
         </classes>
     </test>
 
-    <!--    <test name="Gladius Grid Tests 2">-->
-    <!--        <classes>-->
-    <!--            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>-->
-    <!--        </classes>-->
-    <!--    </test>-->
+<!--    <test name="Gladius Grid Tests 2">-->
+<!--        <classes>-->
+<!--            <class name="de.codefever.gladini.SimpleSeleniumTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
-    <!--    <test name="Gladius Grid Tests 3">-->
-    <!--        <classes>-->
-    <!--            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>-->
-    <!--        </classes>-->
-    <!--    </test>-->
+<!--    <test name="Gladius Grid Tests 3">-->
+<!--        <classes>-->
+<!--            <class name="de.codefever.gladini.SimpleSeleniumTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
-    <!--    <test name="Gladius Grid Tests 4">-->
-    <!--        <classes>-->
-    <!--            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>-->
-    <!--        </classes>-->
-    <!--    </test>-->
-
-    <!--    <test name="Gladius Grid Tests 5">-->
-    <!--        <classes>-->
-    <!--            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>-->
-    <!--        </classes>-->
-    <!--    </test>-->
-
-    <!--    <test name="Gladius Grid Tests 6">-->
-    <!--        <classes>-->
-    <!--            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>-->
-    <!--        </classes>-->
-    <!--    </test>-->
-
-    <!--    <test name="Gladius Grid Tests 7">-->
-    <!--        <classes>-->
-    <!--            <class name="de.codefever.examini.test.integration.webdriver.GladiusTest"/>-->
-    <!--        </classes>-->
-    <!--    </test>-->
+<!--    <test name="Gladius Grid Tests 4">-->
+<!--        <classes>-->
+<!--            <class name="de.codefever.gladini.SimpleSeleniumTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 </suite>
