@@ -17,6 +17,7 @@ spec:
       containers:
       - name: "{{ .Values.hub.name }}"
         image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: "{{ .Values.hub.image.pullPolicy }}"
         env:
           - name: GRID_NEW_SESSION_WAIT_TIMEOUT
             value: "{{ .Values.hub.env.gridNewSessionWaitTimeout }}"

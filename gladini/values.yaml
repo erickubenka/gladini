@@ -10,7 +10,7 @@ hub:
   image:
     repository: selenium/hub
     tag: "4.0.0"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   serviceAccount:
     # Specifies whether a service account should be created
@@ -85,11 +85,27 @@ chrome:
   image:
     repository: selenium/node-chrome
     tag: "4.0.0"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   autoscaling:
     enabled: true
-    minReplicas: 4
+    minReplicas: 1
+    maxReplicas: 8
+    targetValue: 75
+
+firefox:
+  name: "selenium-node-firefox"
+
+  replicaCount: 1
+
+  image:
+    repository: selenium/node-firefox
+    tag: "4.0.0"
+    pullPolicy: Always
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
     maxReplicas: 8
     targetValue: 75
 

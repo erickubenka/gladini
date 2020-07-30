@@ -63,6 +63,13 @@ rules:
         matches: "selenium_grid_hub_chromeSessionsInUsePercent"
         as: "selenium_grid_hub_chromesessionsinusepercent"
     metricsQuery: sum(<<.Series>>)
+  - seriesQuery: '{__name__= "selenium_grid_hub_firefoxSessionsInUsePercent"}'
+    resources:
+        template: <<.Resource>>
+    name:
+        matches: "selenium_grid_hub_firefoxSessionsInUsePercent"
+        as: "selenium_grid_hub_firefoxsessionsinusepercent"
+    metricsQuery: sum(<<.Series>>)
   resource: {}
 #   cpu:
 #     containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m])) by (<<.GroupBy>>)
