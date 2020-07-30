@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selenium-node-firefox
+  labels:
+    app: selenium-node-firefox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: selenium-node-firefox
+  template:
+    metadata:
+      labels:
+        app: selenium-node-firefox
+    spec:
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      containers:
+      - name: selenium-node-firefox
+        image: selenium/node-firefox:4.0.0
+        ports:
+          - containerPort: 5555
+        volumeMounts:
+          - mountPath: /dev/shm
+            name: dshm
+        env:
+          - name: HUB_HOST
+            value: "selenium-hub"
+        resources:
+          limits:
+            memory: "1000Mi"
+            cpu: ".5"
+#        livenessProbe:
+#          httpGet:
+#            path: /status
+#            port: 5555
+#          initialDelaySeconds: 30
+#          timeoutSeconds: 5
+        lifecycle:
+          preStop:
+            exec:
+              command: [
+                "/bin/sh", 
+                "-c", 
+                "while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
+                 nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}'); \
+                 curl -X DELETE http://selenium-hub:4444/se/grid/distributor/node/$nodeid"
+                ]
+      terminationGracePeriodSeconds: 3600
+

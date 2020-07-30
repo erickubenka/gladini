@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.chrome.name }}"
+  name: "{{ .Values.firefox.name }}"
   labels:
-    app: "{{ .Values.chrome.name }}"
+    app: "{{ .Values.firefox.name }}"
 spec:
-  replicas: {{ .Values.chrome.replicaCount }}
+  replicas: {{ .Values.firefox.replicaCount }}
   selector:
     matchLabels:
-      app: "{{ .Values.chrome.name }}"
+      app: "{{ .Values.firefox.name }}"
   template:
     metadata:
       labels:
-        app: "{{ .Values.chrome.name }}"
+        app: "{{ .Values.firefox.name }}"
     spec:
       volumes:
       - name: dshm
         emptyDir:
           medium: Memory
       containers:
-      - name: "{{ .Values.chrome.name }}"
-        image: "{{ .Values.chrome.image.repository }}:{{ .Values.chrome.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: "{{ .Values.chrome.image.pullPolicy }}"
+      - name: "{{ .Values.firefox.name }}"
+        image: "{{ .Values.firefox.image.repository }}:{{ .Values.firefox.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: "{{ .Values.firefox.image.pullPolicy }}"
         ports:
           - containerPort: 5555
         volumeMounts:

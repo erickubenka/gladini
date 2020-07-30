@@ -25,11 +25,13 @@ var (
 )
 
 type Exporter struct {
-URI, message                         																	string
-	mutex                                																sync.RWMutex
-	up, ready, registeredNodes																			prometheus.Gauge
-	chromeNodes																							prometheus.Gauge
-	chromeSessionsInUse, chromeSessionsTotalAvailable, chromeSessionsFree, chromeSessionsInUsePercent 	prometheus.Gauge
+URI, message                         																		string
+	mutex                                																	sync.RWMutex
+	up, ready, registeredNodes																				prometheus.Gauge
+	chromeNodes																								prometheus.Gauge
+	chromeSessionsInUse, chromeSessionsTotalAvailable, chromeSessionsFree, chromeSessionsInUsePercent 		prometheus.Gauge
+	firefoxNodes																							prometheus.Gauge
+	firefoxSessionsInUse, firefoxSessionsTotalAvailable, firefoxSessionsFree, firefoxSessionsInUsePercent 	prometheus.Gauge
 }
 
 type HubResponse struct {
@@ -118,6 +120,36 @@ func NewExporter(uri string) *Exporter {
 			Name:      "chromeSessionsInUsePercent",
 			Help:      "Percentage of used chrome sessions",
 		}),
+		firefoxNodes: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "firefoxNodes",
+			Help:      "total number of registered firefox nodes",
+		}),
+		firefoxSessionsInUse: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "firefoxSessionsInUse",
+			Help:      "total number of firefox sessions in use",
+		}),
+		firefoxSessionsTotalAvailable: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "firefoxSessionsTotalAvailable",
+			Help:      "total number of firefox sessions available regardless of use state",
+		}),
+		firefoxSessionsFree: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "firefoxSessionsFree",
+			Help:      "total number of firefox sessions free",
+		}),
+		firefoxSessionsInUsePercent: prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "firefoxSessionsInUsePercent",
+			Help:      "Percentage of used firefox sessions",
+		}),
 	}
 }
 
@@ -132,6 +164,12 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.chromeSessionsTotalAvailable.Describe(ch)
 	e.chromeSessionsFree.Describe(ch)
 	e.chromeSessionsInUsePercent.Describe(ch)
+
+	e.firefoxNodes.Describe(ch)
+	e.firefoxSessionsInUse.Describe(ch)
+	e.firefoxSessionsTotalAvailable.Describe(ch)
+	e.firefoxSessionsFree.Describe(ch)
+	e.firefoxSessionsInUsePercent.Describe(ch)
 }
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
@@ -151,6 +189,12 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- e.chromeSessionsFree
 	ch <- e.chromeSessionsInUsePercent
 
+	ch <- e.firefoxNodes
+	ch <- e.firefoxSessionsInUse
+	ch <- e.firefoxSessionsTotalAvailable
+	ch <- e.firefoxSessionsFree
+	ch <- e.firefoxSessionsInUsePercent
+
 	return
 }
 
@@ -166,6 +210,12 @@ func (e *Exporter) scrape() {
 	e.chromeSessionsTotalAvailable.Set(0)
 	e.chromeSessionsFree.Set(0)
 	e.chromeSessionsInUsePercent.Set(0)
+
+	e.firefoxNodes.Set(0)
+	e.firefoxSessionsInUse.Set(0)
+	e.firefoxSessionsTotalAvailable.Set(0)
+	e.firefoxSessionsFree.Set(0)
+	e.firefoxSessionsInUsePercent.Set(0)
 
 	body, err := e.fetch()
 	if err != nil {
@@ -207,6 +257,11 @@ func (e *Exporter) scrape() {
 	var chromeSessionCount float64 = 0
 	var chromeSessionMax float64 = 0
 
+	// set registered node count for firefox
+	var firefoxNodeCount float64 = 0
+	var firefoxSessionCount float64 = 0
+	var firefoxSessionMax float64 = 0
+
 	// iterate every node response
 	for _, nodeMapEntry := range nodesMap {
 
@@ -237,6 +292,21 @@ func (e *Exporter) scrape() {
 					chromeSessionMax = chromeSessionMax + float64(maxSessions)
 				}
 
+				// counting firefox nodes here...
+				if stereoType.Capabilities.BrowserName == "firefox" {
+					// increase firefox node count here...
+					firefoxNodeCount++
+					
+					// try to get sessions count here...
+					var sessionsMap []map[string]json.RawMessage
+					json.Unmarshal(nodeMapEntry["sessions"], &sessionsMap)
+					firefoxSessionCount = firefoxSessionCount + float64(len(sessionsMap))
+					
+					var maxSessions float64
+					json.Unmarshal(nodeMapEntry["maxSessions"], &maxSessions)
+					firefoxSessionMax = firefoxSessionMax + float64(maxSessions)
+				}
+
 				// counting other nodes here...
 				// todo
 			}
@@ -248,6 +318,12 @@ func (e *Exporter) scrape() {
 	e.chromeSessionsTotalAvailable.Set(chromeSessionMax)
 	e.chromeSessionsFree.Set(chromeSessionMax-chromeSessionCount)
 	e.chromeSessionsInUsePercent.Set((chromeSessionCount/chromeSessionMax)*100)
+
+	e.firefoxNodes.Set(firefoxNodeCount)
+	e.firefoxSessionsInUse.Set(firefoxSessionCount)
+	e.firefoxSessionsTotalAvailable.Set(firefoxSessionMax)
+	e.firefoxSessionsFree.Set(firefoxSessionMax-firefoxSessionCount)
+	e.firefoxSessionsInUsePercent.Set((firefoxSessionCount/firefoxSessionMax)*100)
 }
 
 func (e Exporter) fetch() (output []byte, err error) {
