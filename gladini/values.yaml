@@ -89,7 +89,7 @@ chrome:
 
   autoscaling:
     enabled: true
-    minReplicas: 4
+    minReplicas: 1
     maxReplicas: 8
     targetValue: 75
 
@@ -105,7 +105,7 @@ firefox:
 
   autoscaling:
     enabled: true
-    minReplicas: 4
+    minReplicas: 1
     maxReplicas: 8
     targetValue: 75
 
