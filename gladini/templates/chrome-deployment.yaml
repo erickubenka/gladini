@@ -30,6 +30,12 @@ spec:
         env:
           - name: HUB_HOST
             value: "{{ .Values.hub.name }}"
+          - name: SE_EVENT_BUS_HOST
+            value: "{{ .Values.hub.name }}"
+          - name: SE_EVENT_BUS_PUBLISH_PORT
+            value: "4442"
+          - name: SE_EVENT_BUS_SUBSCRIBE_PORT
+            value: "4443"
         resources:
           limits:
             memory: "1000Mi"
