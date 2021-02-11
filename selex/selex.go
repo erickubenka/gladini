@@ -47,7 +47,7 @@ type HubResponseValue struct {
 type Node struct {
 	Id string `json:"id"`
 	MaxSessions float64 `json:"maxSessions"`
-	StereoTypes []StereoType `json:"stereotypes"`
+	StereoTypes []StereoType `json:"stereotype"`
 	Sessions []Session `json:"sessions"`
 	
 	// only present on fault
@@ -56,8 +56,14 @@ type Node struct {
 
 type StereoType struct {
 
-	Capabilities Capability `json:"capabilities"`
-	Count float64 `json:"count"`
+	// Capabilities Capability `json:"capabilities"`
+	// Count float64 `json:"count"`
+	BrowserName string `json:"browserName"`
+}
+
+type Slot struct {
+	LastStarted string `json:"lastStarted"`
+	StereoType StereoType `json:"stereotype"`
 }
 
 type Capability struct {
@@ -273,12 +279,13 @@ func (e *Exporter) scrape() {
 			log.Warnln("Node has warnings present:", id)
 		} else {
 			log.Infoln("Node works properly:", id)
-			var stereotypes []StereoType
-			json.Unmarshal(nodeMapEntry["stereotypes"], &stereotypes)
-			for _, stereoType := range stereotypes {
+			var slots []Slot
+			json.Unmarshal(nodeMapEntry["slots"], &slots)
+
+			for _, slot := range slots {
 
 				// counting chrome nodes here...
-				if stereoType.Capabilities.BrowserName == "chrome" {
+				if slot.StereoType.BrowserName == "chrome" {
 					// increase chrome node count here...
 					chromeNodeCount++
 					
@@ -293,7 +300,7 @@ func (e *Exporter) scrape() {
 				}
 
 				// counting firefox nodes here...
-				if stereoType.Capabilities.BrowserName == "firefox" {
+				if slot.StereoType.BrowserName == "firefox" {
 					// increase firefox node count here...
 					firefoxNodeCount++
 					
