@@ -71,6 +71,7 @@ func scrape() {
 			delete(id)
 		} else {
 			log.Infoln("Node works properly:", id)
+			delete(id)
 		}
 	}
 }
@@ -97,6 +98,8 @@ func delete(id string) {
 		log.Fatal(err)
 		return
 	}
+
+	req.Header.Set("X-REGISTRATION-SECRET", "")
 
 	resp, err := client.Do(req)
     if err != nil {
