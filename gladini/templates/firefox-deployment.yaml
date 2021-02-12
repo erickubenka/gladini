@@ -52,8 +52,10 @@ spec:
               command: [
                 "/bin/sh", 
                 "-c", 
-                "while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
-                  nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}'); \
+                "while [ $(curl http://localhost:5555/status | jq '.value.node.slots[0].session.sessionId | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
+                  nodeid=$(curl http://localhost:5555/status | jq '.value.node.id' | awk '{print substr($1, 2, 36)}'); \
                   curl -X DELETE http://{{ .Values.hub.name }}:4444/se/grid/distributor/node/$nodeid"
                 ]
       terminationGracePeriodSeconds: 3600
+
+      
