@@ -71,7 +71,6 @@ func scrape() {
 			delete(id)
 		} else {
 			log.Infoln("Node works properly:", id)
-			delete(id)
 		}
 	}
 }
