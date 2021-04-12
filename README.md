@@ -4,7 +4,7 @@
 Gladini is a simple Selenium 4 grid built with Kubernetes. It supports basic autoscaling features based on external custom metrics  
 and Prometheus. It is just a proof of concept, how to scale deployments with Selenium 4.
 
-Gladini uses the current alpha version of Selenium 4 as writing this 4.0.0-alpha6. There are plenty of features that worked on Selenium 3 grids, but will currently not work on Selenium 4 grids, therefore Gladini will sneak and trick around them until Selenium provides better API to interact with cluster.
+Gladini uses the current alpha version of Selenium 4 as writing this 4.0.0-beta3. There are plenty of features that worked on Selenium 3 grids, but will currently not work on Selenium 4 grids, therefore Gladini will sneak and trick around them until Selenium provides better API to interact with cluster.
 
 ## Prequisites
 
@@ -198,9 +198,6 @@ https://github.com/kubernetes/client-go/blob/master/examples/in-cluster-client-c
 ## Troubleshooting
 When kubernetes liveness probe fails for selenium node pods, it will spawn the node again with same id
 Solved by using `Selvidere`
-
-When starting multiple sessions against one node, this may fail
-Solved by using alpha6, because alpha6 only spawns one session per node.
 
 ## Jenkins
 
