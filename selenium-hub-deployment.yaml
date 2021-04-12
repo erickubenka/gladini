@@ -17,6 +17,7 @@ spec:
       containers:
       - name: selenium-hub
         image: selenium/hub:4.0.0
+        imagePullPolicy: Always
         env:
 #          - name: GRID_TIMEOUT 
 #            value: "30"

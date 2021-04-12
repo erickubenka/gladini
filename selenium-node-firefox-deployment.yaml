@@ -21,6 +21,7 @@ spec:
       containers:
       - name: selenium-node-firefox
         image: selenium/node-firefox:4.0.0
+        imagePullPolicy: Always
         ports:
           - containerPort: 5555
         volumeMounts:
