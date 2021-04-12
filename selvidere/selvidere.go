@@ -98,6 +98,8 @@ func delete(id string) {
 		return
 	}
 
+	req.Header.Set("X-REGISTRATION-SECRET", "")
+
 	resp, err := client.Do(req)
     if err != nil {
         log.Fatal(err)

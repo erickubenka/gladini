@@ -68,4 +68,28 @@ public class SimpleSeleniumTest {
         driver.quit();
     }
 
+    @Test
+    public void testT04_Start() throws MalformedURLException {
+
+        final RemoteWebDriver driver = new RemoteWebDriver(new URL("http://localhost:30020"), new ChromeOptions());
+        System.out.println("Session id is: " + driver.getSessionId());
+        driver.get("https://google.de");
+        nap();
+        Assert.assertEquals(driver.getTitle(), "Google");
+        driver.quit();
+    }
+
+    @Test
+    public void testT05_Start() throws MalformedURLException {
+
+        nap();
+        final RemoteWebDriver driver = new RemoteWebDriver(new URL("http://localhost:30020"), new ChromeOptions());
+        System.out.println("Session id is: " + driver.getSessionId());
+        driver.get("https://google.de");
+        nap();
+        Assert.assertEquals(driver.getTitle(), "Google");
+        driver.quit();
+    }
+
+
 }

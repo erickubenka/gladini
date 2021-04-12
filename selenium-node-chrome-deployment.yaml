@@ -21,6 +21,7 @@ spec:
       containers:
       - name: selenium-node-chrome
         image: selenium/node-chrome:4.0.0
+        imagePullPolicy: Always
         ports:
           - containerPort: 5555
         volumeMounts:
@@ -29,6 +30,12 @@ spec:
         env:
           - name: HUB_HOST
             value: "selenium-hub"
+          - name: SE_EVENT_BUS_HOST
+            value: "selenium-hub"
+          - name: SE_EVENT_BUS_PUBLISH_PORT
+            value: "4442"
+          - name: SE_EVENT_BUS_SUBSCRIBE_PORT
+            value: "4443"
         resources:
           limits:
             memory: "1000Mi"
@@ -45,9 +52,9 @@ spec:
               command: [
                 "/bin/sh", 
                 "-c", 
-                "while [ $(curl http://localhost:5555/status | jq '.value.node.sessions | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
-                 nodeid=$(curl http://localhost:5555/status | grep id | awk '{print substr($2, 2, 36)}'); \
-                 curl -X DELETE http://selenium-hub:4444/se/grid/distributor/node/$nodeid"
+                "while [ $(curl http://localhost:5555/status | jq '.value.node.slots[0].session.sessionId | length') -ge 1 ]; do sleep 5; echo 'Shutdown requested but session running'; done; \ 
+                  nodeid=$(curl http://localhost:5555/status | jq '.value.node.id' | awk '{print substr($1, 2, 36)}'); \
+                  curl -X DELETE http://{{ .Values.hub.name }}:4444/se/grid/distributor/node/$nodeid --header 'X-REGISTRATION-SECRET;'"
                 ]
       terminationGracePeriodSeconds: 3600
 

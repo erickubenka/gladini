@@ -34,21 +34,10 @@ URI, message                         																		string
 	firefoxSessionsInUse, firefoxSessionsTotalAvailable, firefoxSessionsFree, firefoxSessionsInUsePercent 	prometheus.Gauge
 }
 
-type HubResponse struct {
-	Value HubResponseValue `json:"value"`
-}
-
-type HubResponseValue struct {
-	Ready bool `json:"ready"`
-	Message string `json:"message"`
-	Nodes []Node `json:"nodes"`
-}
-
 type Node struct {
 	Id string `json:"id"`
 	MaxSessions float64 `json:"maxSessions"`
-	StereoTypes []StereoType `json:"stereotypes"`
-	Sessions []Session `json:"sessions"`
+	Slots []Slot `json:"slots"`
 	
 	// only present on fault
 	Warning string `json:warning`
@@ -56,16 +45,23 @@ type Node struct {
 
 type StereoType struct {
 
-	Capabilities Capability `json:"capabilities"`
-	Count float64 `json:"count"`
+	BrowserName string `json:"browserName"`
+}
+
+type Slot struct {
+	LastStarted string `json:"lastStarted"`
+	StereoType StereoType `json:"stereotype"`
+	Session Session `json:"session"`
 }
 
 type Capability struct {
 	BrowserName string `json:"browserName"`
+	BrowserVersion string `json:"browserVersion"`
 }
 
 type Session struct {
-
+	SessionId string `json:"sessionId"`
+	Capabilities Capability `json:"capabilities"`
 }
 
 func NewExporter(uri string) *Exporter {
@@ -245,12 +241,11 @@ func (e *Exporter) scrape() {
 		e.ready.Set(1)
 	}
 
-	// get {hubResponseMap.value.nodes[]}
-	var nodesMap []map[string]json.RawMessage
-	err = json.Unmarshal(valueMap["nodes"], &nodesMap)
+	var nodeList []Node
+	err = json.Unmarshal(valueMap["nodes"], &nodeList)
 
 	// set registered node count.
-	e.registeredNodes.Set(float64(len(nodesMap)))
+	e.registeredNodes.Set(float64(len(nodeList)))
 	
 	// set registered node count for chrome...
 	var chromeNodeCount float64 = 0
@@ -263,48 +258,39 @@ func (e *Exporter) scrape() {
 	var firefoxSessionMax float64 = 0
 
 	// iterate every node response
-	for _, nodeMapEntry := range nodesMap {
+	for _, node := range nodeList {
 
-		var warning string
-		var id string
-		json.Unmarshal(nodeMapEntry["id"], &id)
-
-		if err := json.Unmarshal(nodeMapEntry["warning"], &warning); err == nil {
-			log.Warnln("Node has warnings present:", id)
+		if node.Warning != "" {
+			log.Warnln("Node has warnings present:", node.Id)
 		} else {
-			log.Infoln("Node works properly:", id)
-			var stereotypes []StereoType
-			json.Unmarshal(nodeMapEntry["stereotypes"], &stereotypes)
-			for _, stereoType := range stereotypes {
+			log.Infoln("Node works properly:", node.Id)
+
+			for _, slot := range node.Slots {
 
 				// counting chrome nodes here...
-				if stereoType.Capabilities.BrowserName == "chrome" {
+				if slot.StereoType.BrowserName == "chrome" {
 					// increase chrome node count here...
 					chromeNodeCount++
 					
 					// try to get sessions count here...
-					var sessionsMap []map[string]json.RawMessage
-					json.Unmarshal(nodeMapEntry["sessions"], &sessionsMap)
-					chromeSessionCount = chromeSessionCount + float64(len(sessionsMap))
+					if slot.Session.SessionId != "" {
+						chromeSessionCount++;
+					}
 					
-					var maxSessions float64
-					json.Unmarshal(nodeMapEntry["maxSessions"], &maxSessions)
-					chromeSessionMax = chromeSessionMax + float64(maxSessions)
+					chromeSessionMax = chromeSessionMax + float64(node.MaxSessions)
 				}
 
 				// counting firefox nodes here...
-				if stereoType.Capabilities.BrowserName == "firefox" {
+				if slot.StereoType.BrowserName == "firefox" {
 					// increase firefox node count here...
 					firefoxNodeCount++
 					
 					// try to get sessions count here...
-					var sessionsMap []map[string]json.RawMessage
-					json.Unmarshal(nodeMapEntry["sessions"], &sessionsMap)
-					firefoxSessionCount = firefoxSessionCount + float64(len(sessionsMap))
+					if slot.Session.SessionId != "" {
+						firefoxSessionCount++;
+					}
 					
-					var maxSessions float64
-					json.Unmarshal(nodeMapEntry["maxSessions"], &maxSessions)
-					firefoxSessionMax = firefoxSessionMax + float64(maxSessions)
+					firefoxSessionMax = firefoxSessionMax + float64(node.MaxSessions)
 				}
 
 				// counting other nodes here...
